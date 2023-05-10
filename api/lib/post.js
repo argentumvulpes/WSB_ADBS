@@ -5,7 +5,7 @@ async function createPost(content, author) {
     const session = driver.session()
     try {
         const result = await session.run(
-            `Match (u:User {username: $username}) CREATE (post:Post {content: $content})<-[:posted]-(u) RETURN post`,
+            `Match (u:User {username: $username}) CREATE (post:Post {content: $content, date: datetime()})<-[:posted]-(u) RETURN post`,
             {username:author, content}
         )
         const user1 = result.records[0].get('post')
@@ -43,7 +43,7 @@ async function getPostsByUser(user) {
     const session = driver.session()
     try {
         const result = await session.run(
-            `Match (post:Post)<-[:posted]-(author) where author.username=$user RETURN post`,
+            `Match (post:Post)<-[:posted]-(author:User) where author.username=$user RETURN post ORDER BY post.date DESC`,
             {user}
         )
         return result.records.map(r => r.get('post'))
@@ -56,4 +56,22 @@ async function getPostsByUser(user) {
     }
 }
 
-module.exports = { createPost,getPostByID, getPostsByUser }
+async function getPostsOfFollowedUsers(user) {
+
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `Match (u:User {username: $username})-[:follow]->(fu:User)-[:posted]->(post:Post) RETURN post ORDER BY post.date DESC`,
+            {username:user}
+        )
+        return result.records.map(r => r.get('post'))
+        
+
+    } catch (error) {
+        console.error(`Failed to get post of followed Users: ${error}`)
+    } finally {
+        await session.close()
+    }
+}
+
+module.exports = { createPost,getPostByID, getPostsByUser, getPostsOfFollowedUsers }

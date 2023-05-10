@@ -40,5 +40,41 @@ async function unfollowUser(username, usernameToFollow) {
     }
 }
 
+async function getFollowedByUser(user) {
 
-module.exports = { followUser, unfollowUser }
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `Match (u:User {username: $username})-[:follow]->(fu:User) RETURN fu`,
+            {username:user}
+        )
+        return result.records.map(r => r.get('fu'))
+        
+
+    } catch (error) {
+        console.error(`Failed to get followed Users by User: ${error}`)
+    } finally {
+        await session.close()
+    }
+}
+
+async function getFollowingUsers(user) {
+
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `Match (u:User {username: $username})<-[:follow]-(fu:User) RETURN fu`,
+            {username:user}
+        )
+        return result.records.map(r => r.get('fu'))
+        
+
+    } catch (error) {
+        console.error(`Failed to get following Users: ${error}`)
+    } finally {
+        await session.close()
+    }
+}
+
+
+module.exports = { followUser, unfollowUser, getFollowedByUser, getFollowingUsers }

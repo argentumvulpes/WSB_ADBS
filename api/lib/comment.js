@@ -5,7 +5,7 @@ async function createCommentToPost(content, author, postId) {
     const session = driver.session()
     try {
         const result = await session.run(
-            `Match (u:User {username: $username}), (p:Post) WHERE id(p) = $postId CREATE (p)<-[:reply]-(c:Comment{content: $content})<-[:commented]-(u) RETURN c`,
+            `Match (u:User {username: $username}), (p:Post) WHERE id(p) = $postId CREATE (p)<-[:reply]-(c:Comment{content: $content, date: datetime()})<-[:commented]-(u) RETURN c`,
             {username:author, content, postId}
         )
         const user1 = result.records[0].get('c')
@@ -23,7 +23,7 @@ async function createCommentToComment(content, author, commentId) {
     const session = driver.session()
     try {
         const result = await session.run(
-            `Match (u:User {username: $username}), (co:Comment) WHERE id(co) = $commentId CREATE (co)<-[:reply]-(c:Comment{content: $content})<-[:commented]-(u) RETURN c`,
+            `Match (u:User {username: $username}), (co:Comment) WHERE id(co) = $commentId CREATE (co)<-[:reply]-(c:Comment{content: $content, date: datetime()})<-[:commented]-(u) RETURN c`,
             {username:author, content, commentId}
         )
         const user1 = result.records[0].get('c')
@@ -36,5 +36,28 @@ async function createCommentToComment(content, author, commentId) {
     }
 }
 
+async function getCommentsByPost(postId) {
 
-module.exports = { createCommentToPost,createCommentToComment }
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `Match (post:Post)<-[r:reply*]-(comment:Comment) where id(post)=$postId RETURN comment, r ORDER BY comment.date DESC`,
+            {postId}
+        )
+        return result.records.map(r => {
+            return {
+                r:r.get('r'), 
+                comment:r.get('comment')
+            }
+        })
+        
+
+    } catch (error) {
+        console.error(`Failed to get post by User: ${error}`)
+    } finally {
+        await session.close()
+    }
+}
+
+
+module.exports = { createCommentToPost,createCommentToComment, getCommentsByPost }
