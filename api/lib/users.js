@@ -36,4 +36,20 @@ async function getUser(username) {
         await session.close()
     }
 }
-module.exports = { createUser, getUser }
+
+async function createConstraintIfNotExists() {
+
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `CREATE CONSTRAINT username IF NOT EXISTS FOR (u:User) REQUIRE u.username IS UNIQUE`
+        )
+
+    } catch (error) {
+        console.error(`Failed to create constraint: ${error}`)
+    } finally {
+        await session.close()
+    }
+}
+
+module.exports = { createUser, getUser, createConstraintIfNotExists }
