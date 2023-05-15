@@ -1,35 +1,54 @@
 const { driver } = require('./neo4j')
 
 
-// funkcja rekomendacji osób do obserwowania
-async function recommendationForUser(userId) {
+async function recommendationForUser(username) {
 
     const session = driver.session();
   
     try {
-      // wykonujemy zapytanie do bazy danych Neo4j z użyciem algorytmu PageRank
-      const result = await session.run(
-        `MATCH (u:User {id: $userId})-[:liked|commented]->(p:Post)<-[:liked|commented]-(f:User)
-        WHERE NOT (u)-[:follow]->(f) AND f.id <> u.id
-        WITH DISTINCT f
-        CALL gds.pageRank.stream('User', 'liked|commented', {sourceNodes: [u.id], dampingFactor: 0.85, iterations: 20, weightProperty: 'weight'})
-        YIELD nodeId, score
-        MATCH (f:User {id: toInteger(nodeId)})
-        RETURN f.id as userId, score
-        ORDER BY score DESC
-        LIMIT 10`,
-        {userId}
+      try{
+        await session.run(
+          'CALL gds.graph.drop("rGraph")'
+        );
+      }
+      catch(e){}
+      await session.run(
+        `CALL gds.graph.project("rGraph", ['User', 'Post', 'Comment'], {
+          LIKED: {
+            type: 'liked',
+            orientation: 'UNDIRECTED'
+          },
+          REPLY: {
+            type: 'reply',
+            orientation: 'UNDIRECTED'
+          },
+          POSTED: {
+            type: 'posted',
+            orientation: 'UNDIRECTED'
+          },
+          COMMENTED: {
+            type: 'commented',
+            orientation: 'UNDIRECTED'
+          }
+        })`
       );
-  
-      // zwracamy wynik zapytania w formacie obiektu JSON
+      const result = await session.run(
+        `MATCH (u1:User{username:$username}) WITH u1
+        CALL gds.pageRank.stream(
+          "rGraph", {sourceNodes: [id(u1)]}
+        )
+        YIELD
+          nodeId,score
+        MATCH (u:User) WHERE id(u) = nodeId AND NOT id(u) = id(u1) AND NOT (u1)-[:follow]->(u)
+        RETURN u, score ORDER BY score DESC LIMIT 3`, {username}
+      );
       return result.records.map(record => {
         return {
-          userId: record.get('userId'),
+          userId: record.get('u'),
           score: record.get('score')
         }
       });
     } finally {
-      // zamykamy sesję i połączenie z bazą danych Neo4j
       await session.close();
     }
   }
