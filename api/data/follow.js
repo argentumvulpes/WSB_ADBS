@@ -1,4 +1,4 @@
-const { driver } = require('./neo4j')
+const { driver } = require('../lib/neo4j')
 
 async function followUser(username, usernameToFollow) {
 
@@ -76,5 +76,40 @@ async function getFollowingUsers(user) {
     }
 }
 
+async function getUserFollowersCount(username) {
 
-module.exports = { followUser, unfollowUser, getFollowedByUser, getFollowingUsers }
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `Match (u:User {username: $username})<-[fol:follow]-() RETURN count(fol)`,
+            { username }
+        )
+        const user1 = result.records[0].get('count(fol)').low
+        return user1
+
+    } catch (error) {
+        console.error(`Failed to get user followers count ${error}`)
+    } finally {
+        await session.close()
+    }
+}
+
+async function getUserFollowedCount(username) {
+
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `Match (u:User {username: $username})-[fol:follow]->() RETURN count(fol)`,
+            { username }
+        )
+        const user1 = result.records[0].get('count(fol)').low
+        return user1
+
+    } catch (error) {
+        console.error(`Failed to get user followed count ${error}`)
+    } finally {
+        await session.close()
+    }
+}
+
+module.exports = { followUser, unfollowUser, getFollowedByUser, getFollowingUsers, getUserFollowersCount, getUserFollowedCount }

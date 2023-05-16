@@ -1,4 +1,4 @@
-const { driver } = require('./neo4j')
+const { driver } = require('../lib/neo4j')
 
 
 async function searchByPhrase(phrase,fuzziness=0.3) {

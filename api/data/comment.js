@@ -1,4 +1,4 @@
-const { driver } = require('./neo4j')
+const { driver } = require('../lib/neo4j')
 
 async function createCommentToPost(content, author, postId) {
 
@@ -59,5 +59,22 @@ async function getCommentsByPost(postId) {
     }
 }
 
+async function getPostCommentsCount(id) {
 
-module.exports = { createCommentToPost,createCommentToComment, getCommentsByPost }
+    const session = driver.session()
+    try {
+        const result = await session.run(
+            `Match ()-[repl:reply*]->(post:Post) where id(post)=$id RETURN count(repl)`,
+            {id: Number(id)}
+        )
+        return result.records[0].get('count(repl)').low
+
+    } catch (error) {
+        console.error(`Failed to get post comments count: ${error}`)?.low
+    } finally {
+        await session.close()
+    }
+}
+
+
+module.exports = { createCommentToPost,createCommentToComment, getCommentsByPost, getPostCommentsCount }
