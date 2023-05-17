@@ -35,6 +35,13 @@ const { searchByPhrase, createIndexIfNotExists } = require('./data/search');
 const { recommendationForUser } = require('./data/recommendation');
 const { client } = require('./lib/redis');
 
+const { overwritePostsLikes, 
+  overwriteCommentsLikes, 
+  overwriteFollowersCount, 
+  overwriteFollowedCount,
+  overwriteCommentsCount 
+} = require('./data/xd');
+
 const cors = require('cors');
 const express = require('express');
 const passport = require('passport');
@@ -125,8 +132,20 @@ app.get('/', async (req, res) => {
   // await likeComment("bartek", 12)
   // const recom = await recommendationForUser('kasia')
 
-  const xd = await getPostCommentsCount(6);
-  console.log(xd);
+  // const xd = await overwritePostsLikes(6);
+  // console.log(xd);
+
+  // const xdd = await overwriteCommentsLikes('10');
+  // console.log(xdd);
+
+  // const xddd = await overwriteFollowersCount('kasia');
+  // console.log(xddd);
+
+  // const xdddd = await overwriteFollowedCount('kasia');
+  // console.log(xdddd);  
+
+  // const xddddd = await overwriteCommentsCount(6);
+  // console.log(xddddd); 
 
   //await searchByPhrase('sport')
 
