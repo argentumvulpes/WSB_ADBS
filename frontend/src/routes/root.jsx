@@ -2,6 +2,9 @@ import Post from '../components/post';
 import useAuthUser from '../data/use-auth';
 import useMainPosts from '../data/use-main-posts';
 
+import PostInput from '../components/post-input';
+import UserRecommendations from '../components/recommendations';
+
 export default function Root() {
   const { data: user } = useAuthUser();
   const { data: posts, isLoading: isLoading } = useMainPosts();
@@ -10,10 +13,21 @@ export default function Root() {
     <>
       <div>
         <div className="mt-8 text-2xl font-semibold">
-          Strona główna, hej <a className='text-cyan-500 hover:text-cyan-600' href={`/user/${user}`}>{user}</a> :)
+          Strona główna, hej{' '}
+          <a
+            className="text-cyan-500 hover:text-cyan-600"
+            href={`/user/${user}`}
+          >
+            {user}
+          </a>{' '}
+          :)
+        </div>
+        <UserRecommendations />
+        <div className="my-8 flex flex-col">
+          <PostInput />
         </div>
         {isLoading === false && (
-          <div className="flex flex-col space-y-8 divide-y mt-8">
+          <div className="flex flex-col space-y-8 divide-y mt-8 pb-20">
             {posts.map((p) => (
               <Post
                 id={p.post.identity.low}

@@ -14,6 +14,7 @@ import {
 } from '@tanstack/react-query';
 import Login from './routes/login';
 import Layout from './components/layout';
+import Search from './routes/search';
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: '/user/:userName',
     element: <Layout><User /></Layout>,
+  },
+  {
+    path: '/search',
+    element: <Layout><Search /></Layout>,
   },
 ]);
 

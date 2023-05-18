@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 export const POST_COMMENTS_COUNT_QUERY_KEY = 'post-comments-count';
 
 export const getPostCommentsCount = async (postId) => {
-  const { data } = await apiClient.get(`/comments/post/${postId}`);
+  const { data } = await apiClient.get(`/comments/post/${postId}/count`);
 
   return data.count || 0;
 };
