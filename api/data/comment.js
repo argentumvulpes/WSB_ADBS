@@ -44,9 +44,9 @@ async function createCommentToComment(content, author, commentId) {
 
 async function getCommentsByPost(postId) {
     const savedComments = await client.get(`post:${postId}:comments`);
-    // if (savedComments) {
-    //     return JSON.parse(savedComments);
-    // }
+    if (savedComments) {
+        return JSON.parse(savedComments);
+    }
 
     const session = driver.session();
     try {
@@ -61,8 +61,6 @@ async function getCommentsByPost(postId) {
                 comment: r.get("comment"),
             };
         });
-
-        console.log(mappedResult)
 
         await client.set(
             `post:${postId}:comments`,

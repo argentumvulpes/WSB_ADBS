@@ -60,7 +60,7 @@ export default function Post({
       <div className="flex mt-3 space-x-8">
         {loadingLikes === false && <PostLikes likes={likes} postId={id} />}
         {loadingComments === false && (
-          <PostCommentsCount onClick={() => setShowComments(true)} commentsCount={comments} />
+          <PostCommentsCount onClick={() => setShowComments(prev => !prev)} commentsCount={comments} />
         )}
       </div>
       {showComments && <PostComments id={id} />}
@@ -82,7 +82,7 @@ function PostLikes({ likes, postId }) {
 
   return (
     <div
-      className="flex cursor-pointer text-cyan-500 hover:text-cyan-600"
+      className="flex cursor-pointer text-cyan-500 hover:text-cyan-600 select-none"
       onClick={onClick}
     >
       {likes.userLike === 1 && <FullHeartIcon className="h-6 w-6" />}
@@ -94,7 +94,7 @@ function PostLikes({ likes, postId }) {
 
 function PostCommentsCount({ commentsCount, onClick }) {
   return (
-    <div onClick={onClick} className="flex cursor-pointer text-cyan-500 hover:text-cyan-600">
+    <div onClick={onClick} className="flex cursor-pointer text-cyan-500 hover:text-cyan-600 select-none">
       <ChatBubbleLeftIcon className="h-6 w-6" />
       <div className="font-semibold ml-1 text-lg mt-1">{commentsCount}</div>
     </div>
@@ -145,7 +145,7 @@ function PostComments({ id }) {
   })
 
   return (
-    <div className="ml-5">
+    <div>
       {Object.values(mappedComments).map(c => <Comment key={c.comment.identity.low} comment={c} />)}
     </div>
   );

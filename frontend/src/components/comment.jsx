@@ -4,8 +4,9 @@ import {
   POST_LIKES_COUNT_QUERY_KEY,
 } from "../data/use-post-likes-count";
 import { useQueryClient } from "@tanstack/react-query";
-import { likePost, unlikePost } from "../data/likes";
-import useCommentLikesCount from "../data/use-comment-likes-count";
+import { likeComment, likePost, unlikeComment, unlikePost } from "../data/likes";
+import useCommentLikesCount, { COMMENT_LIKES_COUNT_QUERY_KEY } from "../data/use-comment-likes-count";
+import { POST_COMMENTS_QUERY_KEY } from "../data/use-post-comments";
 
 export default function Comment({
   comment
@@ -24,12 +25,10 @@ export default function Comment({
 
   const { data: likes, isLoading: loadingLikes } = useCommentLikesCount(id);
 
-  console.log(childrenComments)
-
   return (
-    <div>
+    <div className="border-l">
       <div className="flex items-center">
-        <div className="mb-2 font-semibold text-lg py-2 text-cyan-500 hover:text-cyan-600">
+        <div className="mb-2 font-semibold text-lg py-2 text-cyan-500 hover:text-cyan-600 pl-5">
           <a href={`/user/${username}`}>{username}</a>
         </div>
         <div className="ml-auto flex">
@@ -39,8 +38,8 @@ export default function Comment({
           </div>
         </div>
       </div>
-      <div>{content}</div>
-      <div className="flex mt-3 space-x-8">
+      <div className="pl-5">{content}</div>
+      <div className="flex mt-3 space-x-8 pl-5 border-b pb-4">
         {loadingLikes === false && <CommentLikes likes={likes} postId={id} />}
       </div>
       {Object.values(childrenComments).length > 0 && <div className="ml-5">{Object.values(childrenComments).map(c => <Comment key={c.comment.identity.low} comment={c}/>)}</div>}
@@ -53,16 +52,16 @@ function CommentLikes({ likes, postId }) {
 
   const onClick = async () => {
     if (likes.userLike) {
-      await unlikePost(postId);
+      await unlikeComment(postId);
     } else {
-      await likePost(postId);
+      await likeComment(postId);
     }
-    await queryClient.invalidateQueries([POST_LIKES_COUNT_QUERY_KEY, postId]);
+    await queryClient.invalidateQueries([COMMENT_LIKES_COUNT_QUERY_KEY, postId]);
   };
 
   return (
     <div
-      className="flex cursor-pointer text-cyan-500 hover:text-cyan-600"
+      className="flex cursor-pointer text-cyan-500 hover:text-cyan-600 select-none"
       onClick={onClick}
     >
       {likes.userLike === 1 && <FullHeartIcon className="h-6 w-6" />}
